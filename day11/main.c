@@ -1,52 +1,64 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <time.h>
 
+#define MAX_LEN 7000
 
+int length_int(long v){
+    v /= 10;
+    int l = 1;
+    while (v!=0){
+        v /= 10;
+        l += 1;
+    }    
+    return l;
+}
 
-#define MAX_LEN 10000
+int power10(int n){
+    int a = 1;
+    for (int i = 0; i < n; i++){
+        a *= 10;
+    }
+    return a;
+}
 
-typedef struct Entry {
-    long long key;
-    long long value;
-} Entry;
-
-long long keyExists(Entry* dic, long long key){
-    for(long long i = 0; dic[i].key != -1; i++){
-        if (dic[i].key == key){
+long keyExists(long* dic, long key){
+    for(int i = 0; dic[i*2] != -1; i++){
+        if (dic[i*2] == key){
             return 1;
         }
     }
     return 0;
 }
 
-long long newEntry(Entry* dic, long long key, long long v){
-    long long i = 0;
-    for(i = 0; dic[i].key != -1; i++){}
-    dic[i].key = key;
-    dic[i].value = v;
+int newEntry(long* dic, long key, long v){
+    int i = 0;
+    for(i = 0; dic[i*2] != -1; i++){}
+    dic[i*2] = key;
+    dic[i*2+1] = v;
     return 0;
 }
 
-long long increment(Entry* dic, long long key, long long v){
-    for(long long i = 0; dic[i].key != -1; i++){
-        if (dic[i].key == key){
-            dic[i].value += v;
+int increment(long* dic, long key, long v){
+    for(int i = 0; dic[i*2] != -1; i++){
+        if (dic[i*2] == key){
+            dic[i*2+1] += v;
             return 1;
         }
     }
     return 0;
 }
 
-void blink(long long** line){
-    Entry *dic = malloc(sizeof(Entry) * MAX_LEN);
-    for(long long i = 0; i<MAX_LEN; i++){
-        dic[i].key=-1;
+void blink(long** line, long** stones){
+    long* dic = malloc(sizeof(long) *  MAX_LEN*2);
+
+    for(int i = 0; i<MAX_LEN; i++){
+        dic[i*2]=-1;
     }
 
-    for(long long i = 0; line[i][0]!=-1; i++){
-        long long v = line[i][0];
+    for(int i = 0; line[i][0]!=-1; i++){
+        long v = line[i][0];
         if (keyExists(dic, v)){
             increment(dic, v, line[i][1]);
         }else{
@@ -54,45 +66,36 @@ void blink(long long** line){
         }
     }
 
-    long long** stones = malloc(sizeof(long long)*MAX_LEN);
-    for (long long j = 0; j < MAX_LEN; j++){
-        stones[j] = malloc(sizeof(long long)*2);
-    }
 
-    long long i = 0;
-    while (dic[i].key!=-1){
-        long long v = dic[i].key;
-        long long w = dic[i].value;
-        stones[i][0] = v;
-        stones[i][1] = w;
+    int i = 0, j = 0;
+    while (dic[i*2] != -1){
+        stones[i][0] = dic[i*2];
+        stones[i][1] = dic[i*2+1];
         i++; 
     }
     stones[i][0] = -1;
 
-    i = 0;
-    long long j = 0;
+    i = 0, j = 0;
     while (stones[i][0] != -1){
-        long long v = stones[i][0]; 
+        long v = stones[i][0]; 
         if (v == 0){
             line[j][0] = 1;
             line[j][1] = stones[i][1];
-            j++;
-            i++;
-        }else if( (long long)( log(v)/log(10))%2!=0  ){
-            long long l = (long long)( log(v)/ log(10))+1;
-            line[j][0] = v/pow(10,l/2);
+        }else if( length_int(v)%2==0  ){
+            int l = length_int(v);
+            int p10 = power10(l/2);
+            line[j][0] = v/p10;
             line[j][1] = stones[i][1];
             j++;
-            line[j][0] = v % (long long)(pow(10,l/2));
+            line[j][0] = v % p10;
             line[j][1] = stones[i][1];
-            j++;
-            i++;
         }else{
             line[j][0] = v*2024;
             line[j][1] = stones[i][1];
-            j++;
-            i++;
+
         }
+        j++;
+        i++;
     }
     line[j][0]=-1;
 
@@ -104,9 +107,11 @@ int main(){
     FILE *file;
     char* filename = "input2.txt";
     char line[MAX_LEN];
-    long long** stones = malloc(sizeof(long long)*MAX_LEN);
-    for (long long j = 0; j < MAX_LEN; j++){
-        stones[j] = malloc(sizeof(long long)*2);
+    long** stones = malloc(sizeof(long)*MAX_LEN);
+    long** trash = malloc(sizeof(long)*MAX_LEN);
+    for (long j = 0; j < MAX_LEN; j++){
+        stones[j] = malloc(sizeof(long)*2);
+        trash[j] = malloc(sizeof(long)*2);
     }
     file = fopen(filename, "r");
 
@@ -114,11 +119,11 @@ int main(){
 
     fclose(file); // Close the file after reading
 
-    // Split the line long longo tokens and convert to long longegers
+    // Split the line longo tokens and convert to longegers
     char *token = strtok(line, " ");
     int i = 0;
     while (token != NULL) {
-        int number = atoi(token); // Convert the token to an long longeger
+        int number = atoi(token); // Convert the token to an longeger
         stones[i][0] = number;
         stones[i][1] = 1;
         i++;
@@ -126,16 +131,20 @@ int main(){
     }
     stones[i][0] = -1;
 
-    for (int j = 0; j < 75; j++){
-        blink(stones);
-    }
 
-    long long acc = 0;
-    for (long long j = 0; j < MAX_LEN && stones[j][0]!=-1; j++){
+    clock_t begin = clock();
+    for (int j = 0; j < 75; j++){
+        blink(stones, trash);
+    }
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+
+    long acc = 0;
+    for (long j = 0; j < MAX_LEN && stones[j][0]!=-1; j++){
         acc += stones[j][1];
     }
 
-    printf("%lld\n", acc);
+    printf("Took %.5f seconds to calculate: %ld\n", time_spent, acc);
 
 }
 
