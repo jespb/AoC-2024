@@ -109,7 +109,7 @@ int main(){
     char line[MAX_LEN];
     long** stones = malloc(sizeof(long)*MAX_LEN);
     long** trash = malloc(sizeof(long)*MAX_LEN);
-    for (long j = 0; j < MAX_LEN; j++){
+    for (int j = 0; j < MAX_LEN; j++){
         stones[j] = malloc(sizeof(long)*2);
         trash[j] = malloc(sizeof(long)*2);
     }
@@ -117,17 +117,16 @@ int main(){
 
     fgets(line, sizeof(line), file);
 
-    fclose(file); // Close the file after reading
+    fclose(file); 
 
-    // Split the line longo tokens and convert to longegers
     char *token = strtok(line, " ");
     int i = 0;
     while (token != NULL) {
-        int number = atoi(token); // Convert the token to an longeger
+        int number = atoi(token);
         stones[i][0] = number;
         stones[i][1] = 1;
         i++;
-        token = strtok(NULL, " "); // Get the next token
+        token = strtok(NULL, " ");
     }
     stones[i][0] = -1;
 
