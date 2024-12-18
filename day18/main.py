@@ -74,4 +74,4 @@ for corruption in range(2000, 3000):
     
     if explored[w][w] == -1:
         print(f[corruption-1])
-        break
+        break 
